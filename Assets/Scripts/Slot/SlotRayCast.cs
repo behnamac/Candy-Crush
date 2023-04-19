@@ -9,7 +9,7 @@ public class SlotRayCast : MonoBehaviour
     public Slot GetSlot() 
     {
         RaycastHit2D hit;
-        hit = Physics2D.Raycast(transform.position, direction);
+        hit = Physics2D.Raycast(transform.position, direction, length);
 
         if(hit.collider != null) 
         {
@@ -24,7 +24,7 @@ public class SlotRayCast : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.white;
+        Gizmos.color = Color.red;
         Gizmos.DrawRay(transform.position, direction * length);
     }
 }

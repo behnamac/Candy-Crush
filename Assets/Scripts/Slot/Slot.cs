@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public enum SlotType { Type1, Type2, Type3, Type4, Type5 }
-public class Slot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+public class Slot : MonoBehaviour
 {
     public SlotType slotType; 
 
@@ -18,7 +18,7 @@ public class Slot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     [SerializeField] private bool randomType;
 
-    [SerializeField] private Image iconeImage;
+    [SerializeField] private SpriteRenderer iconeImage;
 
     private bool _touch;
 
@@ -54,12 +54,12 @@ public class Slot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     private void OnDestroy()
     {
     }
-    public void OnPointerDown(PointerEventData eventData)
+    private void OnMouseDown()
     {
         _touch = true;
+        SlotController.Instance.CheckAuto = false;
     }
-
-    public void OnPointerUp(PointerEventData eventData)
+    private void OnMouseUp() 
     {
         _touch = false;
     }
@@ -105,6 +105,8 @@ public class Slot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         var firstSelfSlotPos = transform.position;
         transform.DOMove(slot.transform.position, 0.2f).OnComplete(() => 
         {
+            SlotController.Instance.CheckAuto = true;
+
             SlotController.Instance.VerticalSlots.Add(this);
             SlotController.Instance.HorizontalSlots.Add(this);
 
