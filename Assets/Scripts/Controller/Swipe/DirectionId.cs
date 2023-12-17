@@ -4,6 +4,7 @@ namespace GG.Infrastructure.Utils.Swipe
 {
     public class DirectionId
     {
+        // Direction IDs
         public const string ID_UP = "Up";
         public const string ID_DOWN = "Down";
         public const string ID_LEFT = "Left";
@@ -13,9 +14,11 @@ namespace GG.Infrastructure.Utils.Swipe
         public const string ID_DOWN_LEFT = "DownLeft";
         public const string ID_DOWN_RIGHT = "DownRight";
 
+        // Properties
         public readonly string Id;
         public readonly Vector3 Direction;
 
+        // Constructor
         public DirectionId(string id, Vector3 direction)
         {
             Id = id;

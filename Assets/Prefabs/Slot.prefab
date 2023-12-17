@@ -248,7 +248,7 @@ MonoBehaviour:
   slotUpRay: {fileID: 861299431554668564}
   slotDownRay: {fileID: 1404616367050706074}
   randomType: 1
-  iconeImage: {fileID: 5327300541009190473}
+  iconImage: {fileID: 5327300541009190473}
 --- !u!1 &7188595291050203402
 GameObject:
   m_ObjectHideFlags: 0

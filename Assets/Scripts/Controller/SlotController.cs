@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using DG.Tweening;
 
 public class SlotController : MonoBehaviour
 {
@@ -14,6 +14,7 @@ public class SlotController : MonoBehaviour
     [HideInInspector] public List<Slot> HorizontalSlots = new List<Slot>();
 
     public bool CheckAuto { get; set; }
+
     private void Awake()
     {
         Instance = this;
@@ -24,78 +25,64 @@ public class SlotController : MonoBehaviour
     {
         AutoCheckSlots();
     }
+
     private void Update()
     {
-        
+        // Add any necessary updates here
     }
-    public void DestroyVericalSlots()
+
+    public void DestroySlots(List<Slot> slots)
     {
-        for (int i = 0; i < VerticalSlots.Count; i++)
+        foreach (var slot in slots)
         {
-            SpawnSlot(VerticalSlots[i].transform.position.x, spawnSlotPoint.position.y + (i * 0.96f));
-            Destroy(VerticalSlots[i].gameObject);
-        }
-    }
-    public void DestroyHorizontalSlots()
-    {
-        for (int i = 0; i < HorizontalSlots.Count; i++)
-        {
-            SpawnSlot(HorizontalSlots[i].transform.position.x, spawnSlotPoint.position.y);
-            Destroy(HorizontalSlots[i].gameObject);
+            SpawnSlot(slot.transform.position.x, spawnSlotPoint.position.y + (slots.IndexOf(slot) * 0.96f));
+            Destroy(slot.gameObject);
         }
     }
 
-    public void SpawnSlot(float xAxis, float yAxis) 
+    public void SpawnSlot(float xAxis, float yAxis)
     {
         Vector3 spawnPoint = new Vector3(xAxis, yAxis, 0);
-        var slot = Instantiate(slotPrefab, spawnPoint, Quaternion.identity);
+        Instantiate(slotPrefab, spawnPoint, Quaternion.identity);
     }
 
-    public IEnumerator CheckAllSlots() 
+    public IEnumerator CheckAllSlots()
     {
         while (true)
         {
             if (CheckAuto)
             {
                 var slots = FindObjectsOfType<Slot>();
-                List<Slot> slotList = new List<Slot>();
-                slotList.AddRange(slots);
-                for (int i = 0; i < slotList.Count; i++)
+                List<Slot> slotList = new List<Slot>(slots);
+
+                foreach (var currentSlot in slotList)
                 {
-                    VerticalSlots = new List<Slot>();
-                    HorizontalSlots = new List<Slot>();
+                    VerticalSlots.Clear();
+                    HorizontalSlots.Clear();
 
-                    VerticalSlots.Add(slots[i]);
-                    HorizontalSlots.Add(slots[i]);
+                    VerticalSlots.Add(currentSlot);
+                    HorizontalSlots.Add(currentSlot);
 
-                    if (slots[i] == null)
+                    if (currentSlot == null)
                     {
                         yield return null;
                         continue;
                     }
 
                     string[] directions = { "Left", "Right", "Up", "Down" };
-                    slots[i].CheckDirectionSlot(directions);
+                    currentSlot.CheckDirectionSlot(directions);
 
                     if (VerticalSlots.Count >= 3)
-                    {
-                        DestroyVericalSlots();
-                    }
+                        DestroySlots(VerticalSlots);
                     else if (HorizontalSlots.Count >= 3)
-                    {
-                        DestroyHorizontalSlots();
-                    }
+                        DestroySlots(HorizontalSlots);
                     else
                     {
                         yield return null;
                         continue;
                     }
 
-                    for (int j = 0; j < slotList.Count; j++)
-                    {
-                        if (slotList[j] == null)
-                            slotList.RemoveAt(j);
-                    }
+                    slotList.RemoveAll(slot => slot == null);
 
                     if (VerticalSlots.Count >= 3 || HorizontalSlots.Count >= 3)
                         yield return new WaitForSeconds(0.2f);

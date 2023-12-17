@@ -1,15 +1,13 @@
 using DG.Tweening;
 using GG.Infrastructure.Utils.Swipe;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 public enum SlotType { Type1, Type2, Type3, Type4, Type5 }
+
 public class Slot : MonoBehaviour
 {
-    public SlotType slotType; 
+    public SlotType slotType;
 
     [SerializeField] private SlotRayCast slotLeftRay;
     [SerializeField] private SlotRayCast slotRightRay;
@@ -17,8 +15,7 @@ public class Slot : MonoBehaviour
     [SerializeField] private SlotRayCast slotDownRay;
 
     [SerializeField] private bool randomType;
-
-    [SerializeField] private SpriteRenderer iconeImage;
+    [SerializeField] private SpriteRenderer iconImage;
 
     private bool _touch;
 
@@ -26,72 +23,50 @@ public class Slot : MonoBehaviour
     {
         SwipeListener.Instance.OnSwipe.AddListener(CheckSides);
 
-        if(randomType)
+        if (randomType)
             SetRandomType();
     }
+
     private void OnValidate()
     {
-        if (!iconeImage) return;
-        switch (slotType)
-        {
-            case SlotType.Type1:
-                iconeImage.color = Color.yellow;
-                break;
-            case SlotType.Type2:
-                iconeImage.color = Color.cyan;
-                break;
-            case SlotType.Type3:
-                iconeImage.color = Color.green;
-                break;
-            case SlotType.Type4:
-                iconeImage.color = Color.blue;
-                break;
-            case SlotType.Type5:
-                iconeImage.color = Color.red;
-                break;
-        }
+        if (!iconImage) return;
+
+        SetIconColorByType();
     }
+
     private void OnDestroy()
     {
+        // Handle OnDestroy logic if needed
     }
+
     private void OnMouseDown()
     {
         _touch = true;
         SlotController.Instance.CheckAuto = false;
     }
-    private void OnMouseUp() 
+
+    private void OnMouseUp()
     {
         _touch = false;
     }
 
-    private void CheckSides(string DirectionName) 
+    private void CheckSides(string directionName)
     {
-        if(!_touch) return;
+        if (!_touch) return;
 
-        switch (DirectionName)
+        switch (directionName)
         {
             case "Left":
-                Slot slotLeft = slotLeftRay.GetSlot();
-                if (slotLeft) 
-                    Move(slotLeft);
+                Move(slotLeftRay.GetSlot());
                 break;
-                //-----------------
             case "Right":
-                Slot slotRight = slotRightRay.GetSlot();
-                if (slotRight)
-                    Move(slotRight);
+                Move(slotRightRay.GetSlot());
                 break;
-                //-----------------
             case "Up":
-                Slot slotUp = slotUpRay.GetSlot();
-                if (slotUp)
-                    Move(slotUp);
+                Move(slotUpRay.GetSlot());
                 break;
-                //-----------------
             case "Down":
-                Slot slotDown = slotDownRay.GetSlot();
-                if (slotDown)
-                    Move(slotDown);
+                Move(slotDownRay.GetSlot());
                 break;
         }
     }
@@ -103,7 +78,8 @@ public class Slot : MonoBehaviour
 
         var firstOtherSlotPos = slot.transform.position;
         var firstSelfSlotPos = transform.position;
-        transform.DOMove(slot.transform.position, 0.2f).OnComplete(() => 
+
+        transform.DOMove(slot.transform.position, 0.2f).OnComplete(() =>
         {
             SlotController.Instance.CheckAuto = true;
 
@@ -115,11 +91,11 @@ public class Slot : MonoBehaviour
 
             if (SlotController.Instance.VerticalSlots.Count >= 3)
             {
-                SlotController.Instance.DestroyVericalSlots();
+                SlotController.Instance.DestroySlots(SlotController.Instance.VerticalSlots);
             }
             else if (SlotController.Instance.HorizontalSlots.Count >= 3)
             {
-                SlotController.Instance.DestroyHorizontalSlots();
+                SlotController.Instance.DestroySlots(SlotController.Instance.HorizontalSlots);
             }
             else
             {
@@ -127,77 +103,69 @@ public class Slot : MonoBehaviour
                 transform.DOMove(firstSelfSlotPos, 0.2f).SetDelay(0.2f);
             }
         });
+
         slot.transform.DOMove(transform.position, 0.2f);
     }
-    private void SetRandomType() 
+
+    private void SetRandomType()
     {
         slotType = (SlotType)Random.Range(0, 5);
+        SetIconColorByType();
+    }
+
+    private void SetIconColorByType()
+    {
         switch (slotType)
         {
             case SlotType.Type1:
-                iconeImage.color = Color.yellow;
+                iconImage.color = Color.yellow;
                 break;
             case SlotType.Type2:
-                iconeImage.color = Color.cyan;
+                iconImage.color = Color.cyan;
                 break;
             case SlotType.Type3:
-                iconeImage.color = Color.green;
+                iconImage.color = Color.green;
                 break;
             case SlotType.Type4:
-                iconeImage.color = Color.blue;
+                iconImage.color = Color.blue;
                 break;
             case SlotType.Type5:
-                iconeImage.color = Color.red;
+                iconImage.color = Color.red;
                 break;
         }
     }
 
-    public void CheckDirectionSlot(string[] directions) 
+    public void CheckDirectionSlot(string[] directions)
     {
-        for (int i = 0; i < directions.Length; i++)
+        foreach (var dir in directions)
         {
-            switch (directions[i])
+            var adjacentSlot = GetAdjacentSlot(dir);
+            if (adjacentSlot && adjacentSlot.slotType == slotType)
             {
-                case "Left":
-                    var leftSlot = slotLeftRay.GetSlot();
-                    if(leftSlot && leftSlot.slotType == slotType)
-                    {
-                        SlotController.Instance.HorizontalSlots.Add(leftSlot);
-                        string[] derictionLeft = { "Left" };
-                        leftSlot.CheckDirectionSlot(derictionLeft);
-                    }
-                    break;
-                //-----------------
-                case "Right":
-                    var rightSlot = slotRightRay.GetSlot();
-                    if (rightSlot && rightSlot.slotType == slotType)
-                    {
-                        SlotController.Instance.HorizontalSlots.Add(rightSlot);
-                        string[] derictionRight = { "Right" };
-                        rightSlot.CheckDirectionSlot(derictionRight);
-                    }
-                    break;
-                //-----------------
-                case "Up":
-                    var upSlot = slotUpRay.GetSlot();
-                    if (upSlot && upSlot.slotType == slotType)
-                    {
-                        SlotController.Instance.VerticalSlots.Add(upSlot);
-                        string[] derictionUp = { "Up" };
-                        upSlot.CheckDirectionSlot(derictionUp);
-                    }
-                    break;
-                //-----------------
-                case "Down":
-                    var downSlot = slotDownRay.GetSlot();
-                    if (downSlot && downSlot.slotType == slotType)
-                    {
-                        SlotController.Instance.VerticalSlots.Add(downSlot);
-                        string[] derictionDown = { "Down" };
-                        downSlot.CheckDirectionSlot(derictionDown);
-                    }
-                    break;
+                if (dir == "Left" || dir == "Right")
+                    SlotController.Instance.HorizontalSlots.Add(adjacentSlot);
+                else
+                    SlotController.Instance.VerticalSlots.Add(adjacentSlot);
+
+                adjacentSlot.CheckDirectionSlot(new[] { dir });
             }
+        }
+    }
+
+    private Slot GetAdjacentSlot(string direction)
+    {
+        switch (direction)
+        {
+            case "Left":
+                return slotLeftRay.GetSlot();
+            case "Right":
+                return slotRightRay.GetSlot();
+            case "Up":
+                return slotUpRay.GetSlot();
+            case "Down":
+                return slotDownRay.GetSlot();
+            default:
+                return null;
         }
     }
 }
